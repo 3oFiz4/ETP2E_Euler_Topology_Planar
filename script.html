@@ -1,0 +1,2216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Euler Topological Planar Partition Explorer (ETP2E)</title>
+    <style>
+      :root {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+
+        --card: 0 0% 6%;
+        --card-foreground: 0 0% 98%;
+
+        --border: 0 0% 15%;
+        --input: 0 0% 15%;
+
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+
+        --muted: 0 0% 12%;
+        --muted-foreground: 0 0% 63%;
+        --bg: hsl(var(--background));
+        --panel: hsl(var(--card));
+        --panel-2: hsl(var(--muted));
+        --border: hsl(var(--border));
+        --text: hsl(var(--foreground));
+        --muted: #a1a1aa;
+        --accent: #ef4444;
+        --warn: #f59e0b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+      }
+      /* Container */
+      details {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        transition: var(--transition);
+        overflow: hidden;
+      }
+
+      /* Hover lift */
+      details:hover {
+        border-color: #333;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Open state */
+      details[open] {
+        border-color: #444;
+        background: #121212;
+      }
+
+      /* Summary */
+      summary {
+        list-style: none;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      /* Remove default arrow */
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      /* Custom arrow */
+      summary::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: rotate(45deg);
+        transition: var(--transition);
+        margin-left: 10px;
+      }
+
+      /* Rotate arrow when open */
+      details[open] summary::after {
+        transform: rotate(225deg);
+        border-color: var(--accent);
+      }
+
+      /* Content */
+      details > *:not(summary) {
+        margin-top: 0.75rem;
+        color: var(--muted);
+        line-height: 1.5;
+        animation: fadeIn 0.2s ease;
+      }
+
+      /* Subtle divider */
+      details[open] summary {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Animation */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .app {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+
+      .sub {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 0.6rem;
+        margin-bottom: 0.7rem;
+      }
+
+      .field {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 0.8rem;
+        padding: 0.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .span-2 {
+        grid-column: span 2;
+      }
+
+      .span-3 {
+        grid-column: span 3;
+      }
+
+      .label {
+        font-size: 0.8rem;
+        color: #d4d4d8;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+        color: inherit;
+      }
+
+      input,
+      select,
+      textarea {
+        background: #0c0c0c;
+        border: 1px solid #3f3f46;
+        border-radius: 0.6rem;
+        padding: 0.55rem 0.65rem;
+        outline: none;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #71717a;
+      }
+
+      button {
+        border: 1px solid #52525b;
+        border-radius: 0.6rem;
+        background: #111111;
+        color: #fafaf9;
+        padding: 0.55rem 0.8rem;
+        cursor: pointer;
+      }
+
+      button:hover:not(:disabled) {
+        background: #1f1f23;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        border-color: #737373;
+      }
+
+      .btn-ghost {
+        border-color: #3f3f46;
+      }
+
+      .inline {
+        display: flex;
+        gap: 0.45rem;
+      }
+
+      .inline input {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .checkbox-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 2.4rem;
+      }
+
+      .checkbox-wrap input[type="checkbox"] {
+        width: 1rem;
+        height: 1rem;
+        accent-color: #f5f5f4;
+      }
+
+      #svgInput {
+        width: 100%;
+        min-height: 240px;
+        resize: vertical;
+        line-height: 1.35;
+        margin: 0.2rem 0 0.8rem;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.55rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .stat {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 0.7rem;
+        padding: 0.55rem 0.65rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+        align-items: center;
+        font-size: 0.84rem;
+      }
+
+      .stat strong {
+        color: #d4d4d8;
+        font-weight: 600;
+      }
+
+      .stat span {
+        text-align: right;
+        color: #fafaf9;
+      }
+
+      .stat.warn {
+        color: var(--warn);
+        justify-content: flex-start;
+      }
+
+      .stat.error {
+        color: #fecaca;
+        background: #3b0a0a;
+        border-color: #7f1d1d;
+        justify-content: flex-start;
+      }
+
+      .pager {
+        margin: 0.3rem 0 0.9rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      #pageInfo {
+        min-width: 140px;
+        text-align: center;
+        color: #d4d4d8;
+        font-size: 0.9rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .card {
+        background: hsl(var(--card));
+        color: hsl(var(--card-foreground));
+        border: 1px solid hsl(var(--border));
+        border-radius: 0.75rem;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+
+      .card:hover {
+        background: hsl(var(--muted));
+      }
+
+      .canvas {
+        aspect-ratio: 1 / 1;
+        background: #232326;
+        padding: 0.35rem;
+      }
+
+      .canvas svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 0.4rem;
+      }
+
+      .meta {
+        border-top: 1px solid #3f3f46;
+        padding: 0.52rem 0.62rem;
+      }
+
+      .card-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .card-sub {
+        margin-top: 0.16rem;
+        font-size: 0.74rem;
+        color: var(--muted);
+        line-height: 1.3;
+        word-break: break-word;
+      }
+
+      .empty {
+        grid-column: 1 / -1;
+        border: 1px dashed #3f3f46;
+        border-radius: 0.8rem;
+        padding: 1rem;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .accent-dot {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      @media (max-width: 980px) {
+        .span-2,
+        .span-3 {
+          grid-column: span 6;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .span-2,
+        .span-3 {
+          grid-column: span 12;
+        }
+
+        .grid {
+          grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+        }
+      }
+
+      /* CONFIG PANEL */
+      .config-panel {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        border: 1px solid hsl(0 0% 15%);
+        border-radius: 0.6rem;
+        background: hsl(0 0% 6%);
+      }
+
+      /* gear button */
+      .config-trigger {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .config-trigger::-webkit-details-marker {
+        display: none;
+      }
+
+      .config-panel[open] {
+        padding-bottom: 0.5rem;
+      }
+
+      /* list */
+      .config-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        padding: 0.4rem 0.6rem;
+        min-width: 200px;
+      }
+
+      .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .config-item label {
+        font-size: 0.7rem;
+        color: hsl(0 0% 63%);
+      }
+
+      .config-item input {
+        width: 90px;
+        font-size: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1>Euler Topological Planar Partition Explorer (ETP2E)</h1>
+      <p class="sub">
+        Parse Euler Topological Planar and enumerate stroke combinations by mode
+        (<span class="accent-dot">Stroke-only</span>,
+        <span class="accent-dot">Slice-only</span>,
+        <span class="accent-dot">Stroke-then-Slice</span>). Results are clipped
+        to the gray canvas bounds and paginated at 20 cards/page.
+      </p>
+      <details>
+        <summary>How to Use</summary>
+        <p>
+          This website is mainly served for mathematician, topology
+          mathematician, or those who are interested in topology. Assuming you
+          have not prepare your SVGs, and assuming you did and what this
+          mechanism does.
+          <details>
+            <summary>Uploading SVG</summary>
+            <p>
+              1. Use any SVG editor app. I personally use Adobe Illustrator. You
+              can use Figma.<br />
+              2. Create a stroke pattern. In Figma, create a frame first, define
+              a square as equal to the frame. Then use either R (Rectangle), O
+              (Ellipse), and L (Line) to define your strokes.<br />
+              3. Export your stroke pattern to SVG. In Figma, select your frame,
+              right click, and find "Copy/Paste As" and select "Copy as SVG".<br />
+              4. Paste your given SVG to the TextArea right below.<br />
+            </p>
+          </details>
+
+          <details>
+            <summary>Using ETP2E</summary>
+            <p>
+              - possible_strokes: defines how many strokes must be initialized.
+              Stroke in this definition, refers something like this, imagine I
+              told you to draw a line, you can draw a circle, and that's 1
+              stroke, but the moment you draw straight to the corner, that's 2
+              strokes already. Test it out.<br />
+              - mode: S! (Stroke-Only, a stroke is defined as a each SVG path
+              element. Example, if you have 6 lines on a simple square, then
+              using S! you'll have 6 strokes),<br />
+              C! (Cut only, a stroke is defined as a cut of all available
+              strokes. Example: (0,0), (0,1), (1,0), and (1,1) dots. How many
+              lines you can do? 6. But I didn't ask to write 2 strokes given 6.
+              But more like, slice all the stroke, which leave you with a even
+              minier stroke (I assume it should be 8 total stroke, since the one
+              that crosses gives 4 mini stroke when cut).),<br />
+              StC (Stroke-and-Cut, stroke is initially defined as each SVG path
+              element, but for each generated SVG path element, we do C!)<br />Test
+              it out.<br />
+              - is_connected_stroke_only: In hypothetical geometry, it is
+              possible to write a single stroke of line, where in 2d it will
+              appear as they are separated. <br />Analogy: Imagine drawing a
+              line on one face of a cube. At that face, you can take alternating
+              direction by switching to another face of a cube, and then return
+              to the same face. From 2d perspective, you just shifted, in 3rd
+              perspective, you simply walked in the other way. <br />Example:
+              Generate this current code, go to Page 30, and see for Generation
+              #707. It is clearly separated, but this program flags it as a
+              single stroke. By enabling this variable, you only allow those
+              whose stroke are connected in 2 dimension.<br />
+              - go_to_page: Allows you to go to any page.<br />
+              - Generate (buton): To generate a new ETP.<br />
+              <br />
+              - base_strokes: Defines the available stroke in your SVG
+              element.<br />
+              - theoretical_combinations: Defines the combinatoric value of a
+              given each SVG element path. (Hard to explain, but so on. I will
+              document an elementary proof to elaborate on how this formula can
+              be achieved mathematically)<br />
+              - generated_combinations: Similar to theoretical but limited to
+              what can be generated. This can be highly influenced to variable
+              such as: is_connected_stroke_only. NOTE: this is capped to 50.000
+              gens.<br />
+              - scanned__candidates: it is generated_combination but without
+              capping ability, showing you the actual amount<br />
+              - time taken: Time taken to render.<br />
+              and more will be explained soon.<br />
+            </p>
+          </details>
+
+          <details>
+            <summary>Real Implementation</summary>
+            <p>
+              I do not know any instance of reality implementation of this,
+              except for one.<br />
+              Conlang... For short, I can use this to generate possible
+              Logograph.<br />
+              Fun Fact is, the reason I made this project apart from the
+              mathematical jargon. Is merely for the purpose of creating
+              logograph. I used the mode, StC, with possible_stroke of 3 a lot.
+              Try it!<br />
+            </p>
+          </details>
+        </p>
+      </details>
+
+      <div class="control-grid">
+        <div class="field span-2">
+          <label class="label" for="possibleStrokes">possible_strokes</label>
+          <input
+            id="possibleStrokes"
+            type="number"
+            min="1"
+            step="1"
+            value="2"
+          />
+        </div>
+
+        <div class="field span-3">
+          <label class="label" for="mode">mode</label>
+          <select id="mode">
+            <option value="stroke-only">S!</option>
+            <option value="slice-only">C!</option>
+            <option value="stroke-then-slice">StC</option>
+          </select>
+        </div>
+
+        <div class="field span-3">
+          <label class="label">is_connected_stroke_only</label>
+          <div class="checkbox-wrap">
+            <input id="connectedOnly" type="checkbox" />
+            <label for="connectedOnly" class="label">true / false</label>
+          </div>
+        </div>
+
+        <div class="field span-2">
+          <label class="label" for="goToPage">go_to_page</label>
+          <div class="inline">
+            <input
+              id="goToPage"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="1"
+            />
+            <button id="goBtn" class="btn-ghost">Go</button>
+          </div>
+        </div>
+
+        <div class="field span-2">
+          <label class="label">&nbsp;</label>
+          <button id="analyzeBtn" class="btn-primary">Generate</button>
+        </div>
+      </div>
+      <details class="config-panel">
+        <summary class="config-trigger">⚙</summary>
+
+        <div class="config-list">
+          <div class="config-item">
+            <label>PAGE_SIZE</label>
+            <input type="number" id="cfg_PAGE_SIZE" placeholder="24" />
+          </div>
+
+          <div class="config-item">
+            <label>MAX_COMBINATIONS</label>
+            <input
+              type="number"
+              id="cfg_MAX_COMBINATIONS"
+              placeholder="50000"
+            />
+          </div>
+
+          <div class="config-item">
+            <label>MAX_SCAN</label>
+            <input type="number" id="cfg_MAX_SCAN" placeholder="1000000" />
+          </div>
+
+          <div class="config-item">
+            <label>MAX_SCAN_CONNECTED</label>
+            <input
+              type="number"
+              id="cfg_MAX_SCAN_CONNECTED"
+              placeholder="300000"
+            />
+          </div>
+
+          <button id="applyConfig" class="btn-primary">Apply</button>
+        </div>
+      </details>
+
+      <textarea id="svgInput">
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" fill="none">
+<g clip-path="url(#clip0_2_3)">
+<rect fill="white" height="500" width="500"/>
+<rect width="500" height="500" fill="#535353"/>
+<line x1="251" y1="4.37114e-08" x2="251" y2="500" stroke="#FF0000" stroke-width="2"/>
+<line x1="376" y1="4.37114e-08" x2="376" y2="500" stroke="#FF0000" stroke-width="2"/>
+<line x1="126" y1="4.37114e-08" x2="126" y2="500" stroke="#FF0000" stroke-width="2"/>
+<line y1="249" x2="500" y2="249" stroke="#FF0000" stroke-width="2"/>
+<line y1="124" x2="500" y2="124" stroke="#FF0000" stroke-width="2"/>
+<line y1="374" x2="500" y2="374" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.29218 498.294L499 1.00001" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.29218 498.294L499 1.00001" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 498.042L499.251 1.25121" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 623.042L499.251 126.251" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 748.042L499.251 251.251" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 873.042L499.251 376.251" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 248.042L499.251 -248.749" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 124.042L499.251 -372.749" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.0414 373.042L499.251 -123.749" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 0.542145L498.542 498.752" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 125.542L498.542 623.751" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 250.542L498.542 748.751" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 375.542L498.542 873.751" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 -249.458L498.542 248.751" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 -373.458L498.542 124.751" stroke="#FF0000" stroke-width="2"/>
+<path d="M1.75052 -124.458L498.542 373.751" stroke="#FF0000" stroke-width="2"/>
+<circle cx="250" cy="250" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="125" cy="125" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="375" cy="125" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="375" cy="375" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="125" cy="375" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="250" cy="250" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle r="499" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" r="499" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" cy="500" r="499" stroke="#FF0000" stroke-width="2"/>
+<circle cy="500" r="499" stroke="#FF0000" stroke-width="2"/>
+<circle r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" cy="500" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cy="500" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="250" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="250" cy="500" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" cy="250" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cy="250" r="249" stroke="#FF0000" stroke-width="2"/>
+<circle cx="125" cy="500" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="375" cy="500" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" cy="375" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="500" cy="125" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="375" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cx="125" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cy="125" r="124" stroke="#FF0000" stroke-width="2"/>
+<circle cy="375" r="124" stroke="#FF0000" stroke-width="2"/>
+</g>
+<defs>
+<clipPath id="clip0_2_3">
+<rect width="500" height="500" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+</textarea
+      >
+
+      <div id="stats" class="stats"></div>
+
+      <div class="pager">
+        <button id="prevBtn" class="btn-ghost" disabled>Previous</button>
+        <span id="pageInfo">Page 0 / 0</span>
+        <button id="nextBtn" class="btn-ghost" disabled>Next</button>
+      </div>
+
+      <div id="results" class="grid"></div>
+    </div>
+
+    <script>
+      (() => {
+        let PAGE_SIZE = 24;
+        let MAX_COMBINATIONS = 50000;
+        let MAX_SCAN = 1000000;
+        let MAX_SCAN_CONNECTED = 300000;
+
+        const state = {
+          mode: "stroke-only",
+          possibleStrokes: 2,
+          connectedOnly: false,
+          currentPage: 1,
+
+          viewBox: { x: 0, y: 0, w: 500, h: 500 },
+          baseStrokes: [],
+          pairMap: new Map(),
+          baseAdj: [],
+          globalSlices: [],
+          sliceAdj: [],
+          sourceSlicesCache: [],
+
+          combos: [],
+          totalTheoretical: 0n,
+          theoreticalLowerBound: false,
+          scanned: 0,
+          truncated: false,
+
+          elapsedMs: 0,
+          stageTimes: { parse: 0, intersections: 0, slicing: 0, generation: 0 },
+          warnings: [],
+          error: "",
+        };
+
+        const refs = {
+          possibleStrokes: document.getElementById("possibleStrokes"),
+          goToPage: document.getElementById("goToPage"),
+          connectedOnly: document.getElementById("connectedOnly"),
+          mode: document.getElementById("mode"),
+          analyzeBtn: document.getElementById("analyzeBtn"),
+          goBtn: document.getElementById("goBtn"),
+          prevBtn: document.getElementById("prevBtn"),
+          nextBtn: document.getElementById("nextBtn"),
+          pageInfo: document.getElementById("pageInfo"),
+          stats: document.getElementById("stats"),
+          results: document.getElementById("results"),
+          svgInput: document.getElementById("svgInput"),
+          applyConfig: document.getElementById("applyConfig"),
+        };
+        /* --- Simple Events --- */
+
+        applyConfig.onclick = () => {
+          const v = (id, def) => {
+            const val = document.getElementById(id).value;
+            return val === "" ? def : Number(val);
+          };
+
+          PAGE_SIZE = v("cfg_PAGE_SIZE", PAGE_SIZE);
+          MAX_COMBINATIONS = v("cfg_MAX_COMBINATIONS", MAX_COMBINATIONS);
+          MAX_SCAN = v("cfg_MAX_SCAN", MAX_SCAN);
+          MAX_SCAN_CONNECTED = v("cfg_MAX_SCAN_CONNECTED", MAX_SCAN_CONNECTED);
+
+          console.log("Updated config:", {
+            PAGE_SIZE,
+            MAX_COMBINATIONS,
+            MAX_SCAN,
+            MAX_SCAN_CONNECTED,
+          });
+        };
+        /* --- Mathematical Logic --- */
+
+        function clamp(v, min, max) {
+          return Math.min(max, Math.max(min, v));
+        }
+
+        function distance(a, b) {
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          return Math.hypot(dx, dy);
+        }
+
+        function pointsNearlyEqual(a, b, tol = 1e-3) {
+          return Math.abs(a.x - b.x) <= tol && Math.abs(a.y - b.y) <= tol;
+        }
+
+        function bboxFromPoints(points) {
+          let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+          for (const p of points) {
+            if (p.x < minX) minX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y > maxY) maxY = p.y;
+          }
+          return {
+            minX,
+            minY,
+            maxX,
+            maxY,
+            x: minX,
+            y: minY,
+            w: Math.max(0, maxX - minX),
+            h: Math.max(0, maxY - minY),
+          };
+        }
+
+        function bboxOverlap(a, b) {
+          return !(
+            a.maxX < b.minX ||
+            b.maxX < a.minX ||
+            a.maxY < b.minY ||
+            b.maxY < a.minY
+          );
+        }
+
+        function insideBox(p, box, margin = 0) {
+          return (
+            p.x >= box.x - margin &&
+            p.x <= box.x + box.w + margin &&
+            p.y >= box.y - margin &&
+            p.y <= box.y + box.h + margin
+          );
+        }
+
+        function outCode(x, y, b) {
+          const xmin = b.x,
+            xmax = b.x + b.w,
+            ymin = b.y,
+            ymax = b.y + b.h;
+          let code = 0;
+          if (x < xmin) code |= 1;
+          else if (x > xmax) code |= 2;
+          if (y < ymin) code |= 4;
+          else if (y > ymax) code |= 8;
+          return code;
+        }
+
+        function segmentIntersectsBox(p0, p1, b) {
+          let x0 = p0.x,
+            y0 = p0.y,
+            x1 = p1.x,
+            y1 = p1.y;
+          const xmin = b.x,
+            xmax = b.x + b.w,
+            ymin = b.y,
+            ymax = b.y + b.h;
+          let c0 = outCode(x0, y0, b);
+          let c1 = outCode(x1, y1, b);
+
+          while (true) {
+            if (!(c0 | c1)) return true;
+            if (c0 & c1) return false;
+
+            const cout = c0 ? c0 : c1;
+            let x = 0,
+              y = 0;
+
+            if (cout & 8) {
+              x = x0 + ((x1 - x0) * (ymax - y0)) / (y1 - y0 || 1e-12);
+              y = ymax;
+            } else if (cout & 4) {
+              x = x0 + ((x1 - x0) * (ymin - y0)) / (y1 - y0 || 1e-12);
+              y = ymin;
+            } else if (cout & 2) {
+              y = y0 + ((y1 - y0) * (xmax - x0)) / (x1 - x0 || 1e-12);
+              x = xmax;
+            } else {
+              y = y0 + ((y1 - y0) * (xmin - x0)) / (x1 - x0 || 1e-12);
+              x = xmin;
+            }
+
+            if (cout === c0) {
+              x0 = x;
+              y0 = y;
+              c0 = outCode(x0, y0, b);
+            } else {
+              x1 = x;
+              y1 = y;
+              c1 = outCode(x1, y1, b);
+            }
+          }
+        }
+
+        function polylineVisible(points, box) {
+          for (const p of points) {
+            if (insideBox(p, box, 0)) return true;
+          }
+          for (let i = 0; i < points.length - 1; i++) {
+            if (segmentIntersectsBox(points[i], points[i + 1], box))
+              return true;
+          }
+          return false;
+        }
+
+        function polylineLength(points) {
+          let total = 0;
+          for (let i = 0; i < points.length - 1; i++) {
+            total += distance(points[i], points[i + 1]);
+          }
+          return total;
+        }
+
+        function escapeHtml(value) {
+          return String(value).replace(
+            /[&<>"']/g,
+            (m) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;",
+              })[m],
+          );
+        }
+
+        function formatBigInt(v) {
+          const s = typeof v === "bigint" ? v.toString() : String(v);
+          return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function parseStyleProperty(styleText, propertyName) {
+          if (!styleText) return "";
+          const rx = new RegExp(`${propertyName}\\s*:\\s*([^;]+)`, "i");
+          const m = styleText.match(rx);
+          return m ? m[1].trim() : "";
+        }
+
+        function hasStroke(el) {
+          const style = el.getAttribute("style") || "";
+          const stroke = (
+            el.getAttribute("stroke") ||
+            parseStyleProperty(style, "stroke") ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+          if (!stroke || stroke === "none" || stroke === "transparent")
+            return false;
+          const sw = parseFloat(
+            el.getAttribute("stroke-width") ||
+              parseStyleProperty(style, "stroke-width") ||
+              "1",
+          );
+          return Number.isFinite(sw) && sw > 0;
+        }
+
+        function getStrokeMeta(el) {
+          const style = el.getAttribute("style") || "";
+          const strokeColor = (
+            el.getAttribute("stroke") ||
+            parseStyleProperty(style, "stroke") ||
+            "#fafaf9"
+          ).trim();
+          const strokeWidth =
+            parseFloat(
+              el.getAttribute("stroke-width") ||
+                parseStyleProperty(style, "stroke-width") ||
+                "1",
+            ) || 1;
+          return { strokeColor, strokeWidth };
+        }
+
+        function getViewBox(svg) {
+          const vb = (svg.getAttribute("viewBox") || "").trim();
+          if (vb) {
+            const nums = vb
+              .split(/[\s,]+/)
+              .map(Number)
+              .filter((n) => Number.isFinite(n));
+            if (nums.length === 4 && nums[2] > 0 && nums[3] > 0) {
+              return { x: nums[0], y: nums[1], w: nums[2], h: nums[3] };
+            }
+          }
+          const wRaw = (svg.getAttribute("width") || "500").replace(
+            /[^\d.+-eE]/g,
+            "",
+          );
+          const hRaw = (svg.getAttribute("height") || "500").replace(
+            /[^\d.+-eE]/g,
+            "",
+          );
+          const w = parseFloat(wRaw) || 500;
+          const h = parseFloat(hRaw) || 500;
+          return { x: 0, y: 0, w, h };
+        }
+
+        function parsePointsAttribute(raw) {
+          const nums = (raw || "").match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi);
+          if (!nums || nums.length < 4) return [];
+          const out = [];
+          for (let i = 0; i + 1 < nums.length; i += 2) {
+            out.push({ x: parseFloat(nums[i]), y: parseFloat(nums[i + 1]) });
+          }
+          return out;
+        }
+
+        function applyMatrix(svgRoot, matrix, p) {
+          if (!matrix) return { x: p.x, y: p.y };
+          const pt = svgRoot.createSVGPoint();
+          pt.x = p.x;
+          pt.y = p.y;
+          const tp = pt.matrixTransform(matrix);
+          return { x: tp.x, y: tp.y };
+        }
+
+        function cleanupPoints(points, closed) {
+          const out = [];
+          for (const p of points) {
+            if (!out.length || distance(out[out.length - 1], p) > 0.02) {
+              out.push({ x: p.x, y: p.y });
+            }
+          }
+          if (
+            closed &&
+            out.length > 1 &&
+            !pointsNearlyEqual(out[0], out[out.length - 1], 0.02)
+          ) {
+            out.push({ x: out[0].x, y: out[0].y });
+          }
+          return out;
+        }
+
+        function sampleStrokeElement(el, svgRoot, viewBox, id) {
+          const tag = el.tagName.toLowerCase();
+          const { strokeColor, strokeWidth } = getStrokeMeta(el);
+          const matrix = el.getCTM();
+
+          let localPoints = [];
+          let closed = false;
+
+          switch (tag) {
+            case "line": {
+              const x1 = parseFloat(el.getAttribute("x1") || "0");
+              const y1 = parseFloat(el.getAttribute("y1") || "0");
+              const x2 = parseFloat(el.getAttribute("x2") || "0");
+              const y2 = parseFloat(el.getAttribute("y2") || "0");
+              localPoints = [
+                { x: x1, y: y1 },
+                { x: x2, y: y2 },
+              ];
+              break;
+            }
+            case "circle": {
+              const cx = parseFloat(el.getAttribute("cx") || "0");
+              const cy = parseFloat(el.getAttribute("cy") || "0");
+              const r = parseFloat(el.getAttribute("r") || "0");
+              if (!(r > 0)) return null;
+              const steps = clamp(Math.round((2 * Math.PI * r) / 36), 24, 100);
+              for (let i = 0; i <= steps; i++) {
+                const t = (i / steps) * Math.PI * 2;
+                localPoints.push({
+                  x: cx + r * Math.cos(t),
+                  y: cy + r * Math.sin(t),
+                });
+              }
+              closed = true;
+              break;
+            }
+            case "ellipse": {
+              const cx = parseFloat(el.getAttribute("cx") || "0");
+              const cy = parseFloat(el.getAttribute("cy") || "0");
+              const rx = parseFloat(el.getAttribute("rx") || "0");
+              const ry = parseFloat(el.getAttribute("ry") || "0");
+              if (!(rx > 0 && ry > 0)) return null;
+              const approxPerimeter =
+                2 * Math.PI * Math.sqrt((rx * rx + ry * ry) / 2);
+              const steps = clamp(Math.round(approxPerimeter / 36), 24, 110);
+              for (let i = 0; i <= steps; i++) {
+                const t = (i / steps) * Math.PI * 2;
+                localPoints.push({
+                  x: cx + rx * Math.cos(t),
+                  y: cy + ry * Math.sin(t),
+                });
+              }
+              closed = true;
+              break;
+            }
+            case "polyline":
+            case "polygon": {
+              localPoints = parsePointsAttribute(
+                el.getAttribute("points") || "",
+              );
+              if (localPoints.length < 2) return null;
+              closed = tag === "polygon";
+              break;
+            }
+            case "rect": {
+              const x = parseFloat(el.getAttribute("x") || "0");
+              const y = parseFloat(el.getAttribute("y") || "0");
+              const w = parseFloat(el.getAttribute("width") || "0");
+              const h = parseFloat(el.getAttribute("height") || "0");
+              if (!(w > 0 && h > 0)) return null;
+              localPoints = [
+                { x, y },
+                { x: x + w, y },
+                { x: x + w, y: y + h },
+                { x, y: y + h },
+                { x, y },
+              ];
+              closed = true;
+              break;
+            }
+            case "path": {
+              let totalLength = 0;
+              try {
+                totalLength = el.getTotalLength();
+              } catch (_) {
+                return null;
+              }
+              if (!(totalLength > 0)) return null;
+              const steps = clamp(Math.round(totalLength / 28), 20, 120);
+              for (let i = 0; i <= steps; i++) {
+                const p = el.getPointAtLength((i / steps) * totalLength);
+                localPoints.push({ x: p.x, y: p.y });
+              }
+              const d = (el.getAttribute("d") || "").trim();
+              closed =
+                /z\s*$/i.test(d) ||
+                (localPoints.length > 2 &&
+                  distance(
+                    localPoints[0],
+                    localPoints[localPoints.length - 1],
+                  ) < 0.5);
+              break;
+            }
+            default:
+              return null;
+          }
+
+          if (
+            closed &&
+            localPoints.length > 1 &&
+            !pointsNearlyEqual(
+              localPoints[0],
+              localPoints[localPoints.length - 1],
+              1e-4,
+            )
+          ) {
+            localPoints.push({ ...localPoints[0] });
+          }
+
+          const worldPoints = localPoints.map((p) =>
+            applyMatrix(svgRoot, matrix, p),
+          );
+          const points = cleanupPoints(worldPoints, closed);
+          if (points.length < 2) return null;
+
+          const cumulative = [0];
+          const segments = [];
+          let total = 0;
+
+          for (let i = 0; i < points.length - 1; i++) {
+            const a = points[i];
+            const b = points[i + 1];
+            const len = distance(a, b);
+            if (len < 1e-7) {
+              cumulative.push(total);
+              continue;
+            }
+            segments.push({
+              index: i,
+              a,
+              b,
+              len,
+              startLen: total,
+              bbox: {
+                minX: Math.min(a.x, b.x),
+                minY: Math.min(a.y, b.y),
+                maxX: Math.max(a.x, b.x),
+                maxY: Math.max(a.y, b.y),
+              },
+            });
+            total += len;
+            cumulative.push(total);
+          }
+
+          if (total < 0.2) return null;
+          if (!polylineVisible(points, viewBox)) return null;
+
+          return {
+            id,
+            tag,
+            points,
+            cumulative,
+            totalLength: total,
+            bbox: bboxFromPoints(points),
+            segments,
+            closed,
+            strokeColor,
+            strokeWidth,
+          };
+        }
+
+        function parseSVGAndExtract(svgText) {
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(svgText, "image/svg+xml");
+          if (xml.querySelector("parsererror")) {
+            throw new Error("Invalid SVG syntax.");
+          }
+          if (
+            !xml.documentElement ||
+            xml.documentElement.tagName.toLowerCase() !== "svg"
+          ) {
+            throw new Error("Input must be a valid <svg> element.");
+          }
+
+          const mount = document.createElement("div");
+          mount.style.position = "fixed";
+          mount.style.left = "-100000px";
+          mount.style.top = "-100000px";
+          mount.style.width = "1px";
+          mount.style.height = "1px";
+          mount.style.opacity = "0";
+          document.body.appendChild(mount);
+
+          try {
+            mount.innerHTML = svgText;
+            const svg = mount.querySelector("svg");
+            if (!svg) throw new Error("No <svg> found.");
+            const viewBox = getViewBox(svg);
+
+            const candidates = svg.querySelectorAll(
+              "line,path,circle,ellipse,polyline,polygon,rect",
+            );
+            const strokes = [];
+
+            for (const el of candidates) {
+              if (el.closest("defs,clipPath,mask,pattern,symbol,marker"))
+                continue;
+              if (!hasStroke(el)) continue;
+              const stroke = sampleStrokeElement(
+                el,
+                svg,
+                viewBox,
+                strokes.length + 1,
+              );
+              if (stroke) strokes.push(stroke);
+            }
+
+            return { viewBox, strokes };
+          } finally {
+            mount.remove();
+          }
+        }
+
+        function cross(v, w) {
+          return v.x * w.y - v.y * w.x;
+        }
+
+        function dot(v, w) {
+          return v.x * w.x + v.y * w.y;
+        }
+
+        function dedupeRawHits(hits) {
+          const map = new Map();
+          for (const h of hits) {
+            const key = `${Math.round(h.x * 1000)}|${Math.round(h.y * 1000)}|${Math.round(
+              h.ua * 10000,
+            )}|${Math.round(h.ub * 10000)}`;
+            if (!map.has(key)) map.set(key, h);
+          }
+          return [...map.values()];
+        }
+
+        function segmentIntersections(p, p2, q, q2, eps = 1e-9) {
+          const r = { x: p2.x - p.x, y: p2.y - p.y };
+          const s = { x: q2.x - q.x, y: q2.y - q.y };
+          const rxs = cross(r, s);
+          const qp = { x: q.x - p.x, y: q.y - p.y };
+          const qpxr = cross(qp, r);
+
+          if (Math.abs(rxs) < eps && Math.abs(qpxr) < eps) {
+            const rr = dot(r, r);
+            const ss = dot(s, s);
+            if (rr < eps || ss < eps) return [];
+
+            let t0 = dot({ x: q.x - p.x, y: q.y - p.y }, r) / rr;
+            let t1 = dot({ x: q2.x - p.x, y: q2.y - p.y }, r) / rr;
+            if (t0 > t1) [t0, t1] = [t1, t0];
+
+            const start = Math.max(0, t0);
+            const end = Math.min(1, t1);
+            if (end - start < eps) return [];
+
+            const list = [];
+            for (const t of [start, end]) {
+              const tt = clamp(t, 0, 1);
+              const x = p.x + r.x * tt;
+              const y = p.y + r.y * tt;
+              let u = 0;
+              if (Math.abs(s.x) >= Math.abs(s.y)) {
+                u = Math.abs(s.x) < eps ? 0 : (x - q.x) / s.x;
+              } else {
+                u = Math.abs(s.y) < eps ? 0 : (y - q.y) / s.y;
+              }
+              list.push({ x, y, ua: tt, ub: clamp(u, 0, 1) });
+            }
+            return dedupeRawHits(list);
+          }
+
+          if (Math.abs(rxs) < eps && Math.abs(qpxr) >= eps) return [];
+
+          const t = cross(qp, s) / rxs;
+          const u = cross(qp, r) / rxs;
+
+          if (t >= -eps && t <= 1 + eps && u >= -eps && u <= 1 + eps) {
+            const tt = clamp(t, 0, 1);
+            const uu = clamp(u, 0, 1);
+            return [
+              {
+                x: p.x + r.x * tt,
+                y: p.y + r.y * tt,
+                ua: tt,
+                ub: uu,
+              },
+            ];
+          }
+          return [];
+        }
+
+        function uniqueSorted(values, eps = 1e-5) {
+          const sorted = values
+            .filter((v) => Number.isFinite(v))
+            .sort((a, b) => a - b);
+          const out = [];
+          for (const v of sorted) {
+            if (v <= eps || v >= 1 - eps) continue;
+            if (!out.length || Math.abs(v - out[out.length - 1]) > eps)
+              out.push(v);
+          }
+          return out;
+        }
+
+        function pairKey(i, j) {
+          return i < j ? `${i}|${j}` : `${j}|${i}`;
+        }
+
+        function dedupePairHits(hits) {
+          const map = new Map();
+          for (const h of hits) {
+            const key = `${Math.round(h.x * 1000)}|${Math.round(h.y * 1000)}|${Math.round(
+              h.ta * 10000,
+            )}|${Math.round(h.tb * 10000)}`;
+            if (!map.has(key)) map.set(key, h);
+          }
+          return [...map.values()];
+        }
+
+        function computeIntersections(strokes, viewBox) {
+          const n = strokes.length;
+          const adjacency = Array.from({ length: n }, () => new Set());
+          const cutsByStroke = Array.from({ length: n }, () => []);
+          const pairMap = new Map();
+
+          for (let i = 0; i < n; i++) {
+            const a = strokes[i];
+            for (let j = i + 1; j < n; j++) {
+              const b = strokes[j];
+              if (!bboxOverlap(a.bbox, b.bbox)) continue;
+
+              const hits = [];
+              for (const sa of a.segments) {
+                if (sa.len < 1e-7) continue;
+                for (const sb of b.segments) {
+                  if (sb.len < 1e-7) continue;
+                  if (
+                    sa.bbox.maxX < sb.bbox.minX ||
+                    sb.bbox.maxX < sa.bbox.minX ||
+                    sa.bbox.maxY < sb.bbox.minY ||
+                    sb.bbox.maxY < sa.bbox.minY
+                  ) {
+                    continue;
+                  }
+
+                  const inter = segmentIntersections(sa.a, sa.b, sb.a, sb.b);
+                  if (!inter.length) continue;
+
+                  for (const h of inter) {
+                    if (!insideBox(h, viewBox, 0.001)) continue;
+                    const ta = (sa.startLen + h.ua * sa.len) / a.totalLength;
+                    const tb = (sb.startLen + h.ub * sb.len) / b.totalLength;
+                    if (!Number.isFinite(ta) || !Number.isFinite(tb)) continue;
+                    hits.push({
+                      x: h.x,
+                      y: h.y,
+                      ta: clamp(ta, 0, 1),
+                      tb: clamp(tb, 0, 1),
+                    });
+                  }
+                }
+              }
+
+              if (!hits.length) continue;
+              const unique = dedupePairHits(hits);
+              if (!unique.length) continue;
+
+              adjacency[i].add(j);
+              adjacency[j].add(i);
+
+              const taVals = [];
+              const tbVals = [];
+              for (const h of unique) {
+                cutsByStroke[i].push(h.ta);
+                cutsByStroke[j].push(h.tb);
+                taVals.push(h.ta);
+                tbVals.push(h.tb);
+              }
+
+              pairMap.set(pairKey(i, j), {
+                i,
+                j,
+                ta: uniqueSorted(taVals),
+                tb: uniqueSorted(tbVals),
+                hits: unique,
+              });
+            }
+          }
+
+          return { adjacency, cutsByStroke, pairMap };
+        }
+
+        function pointAtLength(stroke, lengthTarget) {
+          const L = stroke.totalLength;
+          const target = clamp(lengthTarget, 0, L);
+          const cum = stroke.cumulative;
+
+          let lo = 0;
+          let hi = cum.length - 1;
+          while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (cum[mid] < target) lo = mid + 1;
+            else hi = mid;
+          }
+
+          let segIndex = Math.max(0, lo - 1);
+          segIndex = Math.min(segIndex, stroke.points.length - 2);
+
+          const l0 = cum[segIndex];
+          const l1 = cum[segIndex + 1];
+          const segLen = Math.max(1e-12, l1 - l0);
+          const t = clamp((target - l0) / segLen, 0, 1);
+
+          const a = stroke.points[segIndex];
+          const b = stroke.points[segIndex + 1];
+          return {
+            point: {
+              x: a.x + (b.x - a.x) * t,
+              y: a.y + (b.y - a.y) * t,
+            },
+            segIndex,
+          };
+        }
+
+        function extractSubPolyline(stroke, t0, t1) {
+          const L = stroke.totalLength;
+          const l0 = clamp(t0, 0, 1) * L;
+          const l1 = clamp(t1, 0, 1) * L;
+          if (l1 - l0 < 1e-5) return null;
+
+          const start = pointAtLength(stroke, l0);
+          const end = pointAtLength(stroke, l1);
+
+          const pts = [start.point];
+          const cum = stroke.cumulative;
+          for (
+            let i = start.segIndex + 1;
+            i <= end.segIndex && i < stroke.points.length - 1;
+            i++
+          ) {
+            if (cum[i] > l0 + 1e-6 && cum[i] < l1 - 1e-6) {
+              pts.push(stroke.points[i]);
+            }
+          }
+          pts.push(end.point);
+
+          const clean = [pts[0]];
+          for (let i = 1; i < pts.length; i++) {
+            if (distance(clean[clean.length - 1], pts[i]) > 1e-3) {
+              clean.push(pts[i]);
+            }
+          }
+          if (clean.length < 2) return null;
+          return clean;
+        }
+
+        function buildCutsMapForSubset(subset, pairMap) {
+          const map = new Map();
+          for (const idx of subset) map.set(idx, []);
+
+          for (let a = 0; a < subset.length; a++) {
+            for (let b = a + 1; b < subset.length; b++) {
+              const i = subset[a];
+              const j = subset[b];
+              const pair = pairMap.get(pairKey(i, j));
+              if (!pair) continue;
+
+              if (pair.i === i) {
+                map.get(i).push(...pair.ta);
+                map.get(j).push(...pair.tb);
+              } else {
+                map.get(i).push(...pair.tb);
+                map.get(j).push(...pair.ta);
+              }
+            }
+          }
+          return map;
+        }
+
+        function buildSlicesForSubset(subset, strokes, pairMap, viewBox) {
+          const cutsMap = buildCutsMapForSubset(subset, pairMap);
+          const slices = [];
+
+          for (const strokeIdx of subset) {
+            const stroke = strokes[strokeIdx];
+            const cuts = uniqueSorted(cutsMap.get(strokeIdx) || []);
+            const ts = [0, ...cuts, 1];
+
+            for (let i = 0; i < ts.length - 1; i++) {
+              const t0 = ts[i];
+              const t1 = ts[i + 1];
+              if (t1 - t0 < 1e-5) continue;
+
+              const points = extractSubPolyline(stroke, t0, t1);
+              if (!points) continue;
+              if (polylineLength(points) < 0.8) continue;
+              if (!polylineVisible(points, viewBox)) continue;
+
+              slices.push({
+                id: slices.length,
+                parent: strokeIdx,
+                points,
+                strokeWidth: stroke.strokeWidth,
+                strokeColor: stroke.strokeColor,
+                t0,
+                t1,
+              });
+            }
+          }
+          return slices;
+        }
+
+        function endpointKey(p) {
+          return `${Math.round(p.x * 2)}|${Math.round(p.y * 2)}`; // 0.5px bucket
+        }
+
+        function buildSliceAdjacency(slices) {
+          const adjacency = Array.from(
+            { length: slices.length },
+            () => new Set(),
+          );
+          const endpointMap = new Map();
+
+          function addEndpoint(key, index) {
+            if (!endpointMap.has(key)) endpointMap.set(key, []);
+            endpointMap.get(key).push(index);
+          }
+
+          slices.forEach((s, i) => {
+            if (!s.points || s.points.length < 2) return;
+            addEndpoint(endpointKey(s.points[0]), i);
+            addEndpoint(endpointKey(s.points[s.points.length - 1]), i);
+          });
+
+          for (const list of endpointMap.values()) {
+            if (list.length < 2) continue;
+            for (let i = 0; i < list.length; i++) {
+              for (let j = i + 1; j < list.length; j++) {
+                const a = list[i];
+                const b = list[j];
+                if (a === b) continue;
+                adjacency[a].add(b);
+                adjacency[b].add(a);
+              }
+            }
+          }
+          return adjacency;
+        }
+
+        function isComboConnected(indices, adjacency) {
+          if (indices.length <= 1) return true;
+          const chosen = new Set(indices);
+          const visited = new Set();
+          const stack = [indices[0]];
+          visited.add(indices[0]);
+
+          while (stack.length) {
+            const cur = stack.pop();
+            for (const nb of adjacency[cur]) {
+              if (chosen.has(nb) && !visited.has(nb)) {
+                visited.add(nb);
+                stack.push(nb);
+              }
+            }
+          }
+          return visited.size === indices.length;
+        }
+
+        function combinationBigInt(n, k) {
+          if (k < 0 || k > n) return 0n;
+          let kk = Math.min(k, n - k);
+          let result = 1n;
+          for (let i = 1; i <= kk; i++) {
+            result = (result * BigInt(n - kk + i)) / BigInt(i);
+          }
+          return result;
+        }
+
+        function enumerateCombinations(n, k, opts = {}) {
+          const maxAccept = opts.maxAccept ?? MAX_COMBINATIONS;
+          const maxScan = opts.maxScan ?? MAX_SCAN;
+          const filter = opts.filter || null;
+
+          const theoretical = combinationBigInt(n, k);
+          if (k < 0 || k > n) {
+            return { theoretical, combos: [], scanned: 0, truncated: false };
+          }
+          if (k === 0) {
+            return {
+              theoretical: 1n,
+              combos: [[]],
+              scanned: 1,
+              truncated: false,
+            };
+          }
+
+          const combos = [];
+          const indices = Array.from({ length: k }, (_, i) => i);
+          let scanned = 0;
+          let truncated = false;
+          const earlyScanLimit = theoretical > BigInt(maxScan);
+
+          while (true) {
+            scanned++;
+
+            if (!filter || filter(indices)) {
+              combos.push(indices.slice());
+              if (combos.length >= maxAccept) {
+                truncated = true;
+                break;
+              }
+            }
+
+            if (earlyScanLimit && scanned >= maxScan) {
+              truncated = true;
+              break;
+            }
+
+            let i = k - 1;
+            while (i >= 0 && indices[i] === n - k + i) i--;
+            if (i < 0) break;
+
+            indices[i]++;
+            for (let j = i + 1; j < k; j++) {
+              indices[j] = indices[j - 1] + 1;
+            }
+          }
+
+          return { theoretical, combos, scanned, truncated };
+        }
+
+        function computeEulerMetricFromPieces(pieces) {
+          const degree = new Map();
+          const graph = new Map();
+
+          function ensure(v) {
+            if (!degree.has(v)) degree.set(v, 0);
+            if (!graph.has(v)) graph.set(v, new Set());
+          }
+
+          for (const piece of pieces) {
+            if (!piece.points || piece.points.length < 2) continue;
+            const a = piece.points[0];
+            const b = piece.points[piece.points.length - 1];
+            const ka = endpointKey(a);
+            const kb = endpointKey(b);
+
+            ensure(ka);
+            ensure(kb);
+            degree.set(ka, degree.get(ka) + 1);
+            degree.set(kb, degree.get(kb) + 1);
+            graph.get(ka).add(kb);
+            graph.get(kb).add(ka);
+          }
+
+          const vertices = [...degree.keys()].filter((v) => degree.get(v) > 0);
+          if (!vertices.length) return { components: 0, odd: 0, minStrokes: 0 };
+
+          let components = 0;
+          let oddTotal = 0;
+          let minStrokes = 0;
+          const visited = new Set();
+
+          for (const v of vertices) {
+            if (visited.has(v)) continue;
+            components++;
+            const stack = [v];
+            visited.add(v);
+            let odd = 0;
+
+            while (stack.length) {
+              const cur = stack.pop();
+              if ((degree.get(cur) || 0) % 2 === 1) odd++;
+              for (const nb of graph.get(cur) || []) {
+                if (!visited.has(nb)) {
+                  visited.add(nb);
+                  stack.push(nb);
+                }
+              }
+            }
+
+            oddTotal += odd;
+            minStrokes += odd === 0 ? 1 : odd / 2;
+          }
+
+          return { components, odd: oddTotal, minStrokes };
+        }
+
+        function n1(v) {
+          return Number(v.toFixed(1));
+        }
+
+        function pathFromPoints(points) {
+          if (!points || points.length < 2) return "";
+          let d = `M ${n1(points[0].x)} ${n1(points[0].y)}`;
+          for (let i = 1; i < points.length; i++) {
+            d += ` L ${n1(points[i].x)} ${n1(points[i].y)}`;
+          }
+          return d;
+        }
+
+        function buildCard(combo, globalIndex) {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const canvas = document.createElement("div");
+          canvas.className = "canvas";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          let title = `Combination #${globalIndex}`;
+          const lines = [];
+          let pieces = [];
+
+          if (state.mode === "stroke-only") {
+            const strokeIndices = combo.indices;
+            pieces = strokeIndices.map((i) => {
+              const s = state.baseStrokes[i];
+              return {
+                parent: i,
+                points: s.points,
+                strokeWidth: s.strokeWidth,
+              };
+            });
+
+            const slicedForEuler = buildSlicesForSubset(
+              strokeIndices,
+              state.baseStrokes,
+              state.pairMap,
+              state.viewBox,
+            );
+            const euler = computeEulerMetricFromPieces(
+              slicedForEuler.length ? slicedForEuler : pieces,
+            );
+
+            lines.push(
+              `Strokes: ${strokeIndices.map((i) => `#${i + 1}`).join(", ")}`,
+            );
+            lines.push(
+              `Min draw strokes: ${euler.minStrokes} (components: ${euler.components})`,
+            );
+          } else if (state.mode === "slice-only") {
+            const sliceIndices = combo.indices;
+            pieces = sliceIndices
+              .map((i) => state.globalSlices[i])
+              .filter(Boolean);
+            const parents = [...new Set(pieces.map((p) => p.parent + 1))];
+            const euler = computeEulerMetricFromPieces(pieces);
+
+            lines.push(
+              `Slices: ${sliceIndices.map((i) => `#${i + 1}`).join(", ")}`,
+            );
+            lines.push(
+              `From strokes: ${parents.map((p) => `#${p}`).join(", ") || "-"}`,
+            );
+            lines.push(`Min draw strokes: ${euler.minStrokes}`);
+          } else {
+            const sourceSlices =
+              state.sourceSlicesCache[combo.sourceIndex] || [];
+            pieces = combo.pieceIndices
+              .map((i) => sourceSlices[i])
+              .filter(Boolean);
+            title = `Combination #${globalIndex} > #${combo.originSource}`;
+            const euler = computeEulerMetricFromPieces(pieces);
+
+            lines.push(
+              `Source strokes: ${combo.sourceStrokeIndices
+                .map((i) => `#${i + 1}`)
+                .join(", ")}`,
+            );
+            lines.push(
+              `Sliced pieces: ${combo.pieceIndices.map((i) => `#${i + 1}`).join(", ")}`,
+            );
+            lines.push(`Min draw strokes: ${euler.minStrokes}`);
+          }
+
+          const clipId = `clip-${globalIndex}-${Math.floor(Math.random() * 1e7)}`;
+          const vb = state.viewBox;
+
+          const parentCount = new Map();
+          for (const p of pieces) {
+            parentCount.set(p.parent, (parentCount.get(p.parent) || 0) + 1);
+          }
+
+          const pathMarkup = pieces
+            .map((piece) => {
+              const d = pathFromPoints(piece.points);
+              const split = parentCount.get(piece.parent) > 1;
+              const color =
+                state.mode === "stroke-then-slice" && split
+                  ? "#ef4444"
+                  : "#fafaf9";
+              const sw = clamp(piece.strokeWidth || 2, 1, 3.5);
+              return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" />`;
+            })
+            .join("");
+
+          canvas.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <clipPath id="${clipId}">
+                  <rect x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}" />
+                </clipPath>
+              </defs>
+              <rect x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}" fill="#3f3f46" />
+              <g clip-path="url(#${clipId})">
+                ${pathMarkup}
+              </g>
+            </svg>
+          `;
+
+          meta.innerHTML = `
+            <div class="card-title">${escapeHtml(title)}</div>
+            ${lines.map((line) => `<div class="card-sub">${escapeHtml(line)}</div>`).join("")}
+          `;
+
+          card.appendChild(canvas);
+          card.appendChild(meta);
+          return card;
+        }
+
+        function addStat(label, value, tone = "") {
+          const div = document.createElement("div");
+          div.className = `stat ${tone}`.trim();
+          if (tone === "warn" || tone === "error") {
+            div.textContent = `${label}: ${value}`;
+          } else {
+            div.innerHTML = `<strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span>`;
+          }
+          refs.stats.appendChild(div);
+        }
+
+        function renderStats() {
+          refs.stats.innerHTML = "";
+
+          addStat("mode", state.mode);
+          addStat("possible_strokes", String(state.possibleStrokes));
+          addStat(
+            "is_connected_stroke_only",
+            state.connectedOnly ? "true" : "false",
+          );
+          addStat("base strokes", state.baseStrokes.length.toLocaleString());
+
+          if (state.mode === "slice-only") {
+            addStat("slice units", state.globalSlices.length.toLocaleString());
+          } else if (state.mode === "stroke-then-slice") {
+            addStat(
+              "source combos cached",
+              state.sourceSlicesCache.length.toLocaleString(),
+            );
+          }
+
+          const theoPrefix = state.theoreticalLowerBound ? ">= " : "";
+          addStat(
+            "theoretical combinations",
+            `${theoPrefix}${formatBigInt(state.totalTheoretical)}`,
+          );
+          addStat(
+            "generated combinations",
+            `${state.combos.length.toLocaleString()}${state.truncated ? " (capped)" : ""}`,
+          );
+          addStat("scanned candidates", state.scanned.toLocaleString());
+          addStat("time taken", `${state.elapsedMs.toFixed(1)} ms`);
+          addStat(
+            "parse / intersect / slice",
+            `${state.stageTimes.parse.toFixed(1)} / ${state.stageTimes.intersections.toFixed(1)} / ${state.stageTimes.slicing.toFixed(1)} ms`,
+          );
+          addStat("generation", `${state.stageTimes.generation.toFixed(1)} ms`);
+
+          for (const w of state.warnings) {
+            addStat("warning", w, "warn");
+          }
+          if (state.error) {
+            addStat("error", state.error, "error");
+          }
+        }
+
+        function renderPage() {
+          const total = state.combos.length;
+          const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 0;
+
+          if (totalPages > 0) {
+            state.currentPage = clamp(state.currentPage, 1, totalPages);
+            refs.pageInfo.textContent = `Page ${state.currentPage} / ${totalPages}`;
+          } else {
+            state.currentPage = 1;
+            refs.pageInfo.textContent = "Page 0 / 0";
+          }
+
+          refs.prevBtn.disabled = totalPages <= 1 || state.currentPage <= 1;
+          refs.nextBtn.disabled =
+            totalPages <= 1 || state.currentPage >= totalPages;
+
+          refs.results.innerHTML = "";
+          if (!total) {
+            const empty = document.createElement("div");
+            empty.className = "empty";
+            empty.textContent = state.error || "No combinations to display.";
+            refs.results.appendChild(empty);
+            return;
+          }
+
+          const start = (state.currentPage - 1) * PAGE_SIZE;
+          const end = Math.min(start + PAGE_SIZE, total);
+          for (let i = start; i < end; i++) {
+            refs.results.appendChild(buildCard(state.combos[i], i + 1));
+          }
+        }
+
+        function setBusy(isBusy) {
+          refs.analyzeBtn.disabled = isBusy;
+          refs.goBtn.disabled = isBusy;
+          refs.analyzeBtn.textContent = isBusy ? "Generating..." : "Generate";
+        }
+
+        async function analyze() {
+          setBusy(true);
+
+          state.mode = refs.mode.value;
+          state.possibleStrokes = Math.max(
+            1,
+            parseInt(refs.possibleStrokes.value, 10) || 1,
+          );
+          state.connectedOnly = refs.connectedOnly.checked;
+          state.warnings = [];
+          state.error = "";
+          state.combos = [];
+          state.globalSlices = [];
+          state.sourceSlicesCache = [];
+          state.totalTheoretical = 0n;
+          state.theoreticalLowerBound = false;
+          state.scanned = 0;
+          state.truncated = false;
+          state.stageTimes = {
+            parse: 0,
+            intersections: 0,
+            slicing: 0,
+            generation: 0,
+          };
+
+          const started = performance.now();
+
+          try {
+            const tParse = performance.now();
+            const { viewBox, strokes } = parseSVGAndExtract(
+              refs.svgInput.value,
+            );
+            state.stageTimes.parse = performance.now() - tParse;
+
+            if (!strokes.length) {
+              throw new Error(
+                "No stroke elements found. Ensure elements have stroke + stroke-width.",
+              );
+            }
+
+            state.viewBox = viewBox;
+            state.baseStrokes = strokes;
+
+            const tInter = performance.now();
+            const inter = computeIntersections(strokes, viewBox);
+            state.stageTimes.intersections = performance.now() - tInter;
+            state.pairMap = inter.pairMap;
+            state.baseAdj = inter.adjacency;
+
+            const k = state.possibleStrokes;
+            const connectedFilterBase = state.connectedOnly
+              ? (arr) => isComboConnected(arr, state.baseAdj)
+              : null;
+
+            const tGen = performance.now();
+
+            if (state.mode === "stroke-only") {
+              const res = enumerateCombinations(strokes.length, k, {
+                maxAccept: MAX_COMBINATIONS,
+                maxScan: state.connectedOnly ? MAX_SCAN_CONNECTED : MAX_SCAN,
+                filter: connectedFilterBase,
+              });
+
+              state.totalTheoretical = res.theoretical;
+              state.combos = res.combos.map((indices) => ({ indices }));
+              state.scanned = res.scanned;
+              state.truncated = res.truncated;
+            } else if (state.mode === "slice-only") {
+              const tSlice = performance.now();
+              const allStrokeIdx = Array.from(
+                { length: strokes.length },
+                (_, i) => i,
+              );
+              const slices = buildSlicesForSubset(
+                allStrokeIdx,
+                strokes,
+                state.pairMap,
+                viewBox,
+              );
+              state.stageTimes.slicing = performance.now() - tSlice;
+              state.globalSlices = slices;
+
+              if (k > slices.length) {
+                state.warnings.push(
+                  "possible_strokes is larger than available sliced units.",
+                );
+              }
+
+              const sliceAdj = state.connectedOnly
+                ? buildSliceAdjacency(slices)
+                : null;
+              state.sliceAdj = sliceAdj;
+
+              const res = enumerateCombinations(slices.length, k, {
+                maxAccept: MAX_COMBINATIONS,
+                maxScan: state.connectedOnly ? MAX_SCAN_CONNECTED : MAX_SCAN,
+                filter: state.connectedOnly
+                  ? (arr) => isComboConnected(arr, sliceAdj)
+                  : null,
+              });
+
+              state.totalTheoretical = res.theoretical;
+              state.combos = res.combos.map((indices) => ({ indices }));
+              state.scanned = res.scanned;
+              state.truncated = res.truncated;
+            } else {
+              const sourceRes = enumerateCombinations(strokes.length, k, {
+                maxAccept: Math.min(12000, MAX_COMBINATIONS),
+                maxScan: state.connectedOnly ? MAX_SCAN_CONNECTED : MAX_SCAN,
+                filter: connectedFilterBase,
+              });
+
+              if (sourceRes.truncated) {
+                state.warnings.push(
+                  "Source stroke combinations were truncated before full expansion.",
+                );
+                state.theoreticalLowerBound = true;
+              }
+
+              const derived = [];
+              const sourceSlicesCache = [];
+              let derivedTheo = 0n;
+              let stopEarly = false;
+
+              for (let s = 0; s < sourceRes.combos.length; s++) {
+                const sourceCombo = sourceRes.combos[s];
+                const slices = buildSlicesForSubset(
+                  sourceCombo,
+                  strokes,
+                  state.pairMap,
+                  viewBox,
+                );
+                sourceSlicesCache[s] = slices;
+
+                if (slices.length < k) continue;
+                derivedTheo += combinationBigInt(slices.length, k);
+
+                const localAdj = state.connectedOnly
+                  ? buildSliceAdjacency(slices)
+                  : null;
+
+                const remaining = MAX_COMBINATIONS - derived.length;
+                if (remaining <= 0) {
+                  stopEarly = true;
+                  break;
+                }
+
+                const localRes = enumerateCombinations(slices.length, k, {
+                  maxAccept: remaining,
+                  maxScan: 200000,
+                  filter: state.connectedOnly
+                    ? (arr) => isComboConnected(arr, localAdj)
+                    : null,
+                });
+
+                for (const pieceIndices of localRes.combos) {
+                  derived.push({
+                    originSource: s + 1,
+                    sourceIndex: s,
+                    sourceStrokeIndices: sourceCombo,
+                    pieceIndices,
+                  });
+                  if (derived.length >= MAX_COMBINATIONS) {
+                    stopEarly = true;
+                    break;
+                  }
+                }
+
+                if (localRes.truncated || stopEarly) {
+                  stopEarly = true;
+                  break;
+                }
+              }
+
+              state.sourceSlicesCache = sourceSlicesCache;
+              state.combos = derived;
+              state.totalTheoretical = derivedTheo;
+              state.scanned = sourceRes.scanned;
+              state.truncated = stopEarly || sourceRes.truncated;
+
+              if (stopEarly) {
+                state.theoreticalLowerBound = true;
+                state.warnings.push(
+                  "Stroke-then-Slice combinations were capped for performance.",
+                );
+              }
+            }
+
+            state.stageTimes.generation = performance.now() - tGen;
+
+            if (state.truncated) {
+              state.warnings.push(
+                `Output capped at ${MAX_COMBINATIONS.toLocaleString()} combinations.`,
+              );
+            }
+
+            if (
+              state.possibleStrokes > state.baseStrokes.length &&
+              state.mode !== "slice-only"
+            ) {
+              state.warnings.push(
+                "possible_strokes is larger than the number of base strokes.",
+              );
+            }
+
+            const jump = parseInt(refs.goToPage.value, 10);
+            state.currentPage = Number.isFinite(jump) && jump > 0 ? jump : 1;
+          } catch (err) {
+            state.error =
+              err && err.message ? err.message : "Unexpected error.";
+            state.combos = [];
+            state.totalTheoretical = 0n;
+            state.scanned = 0;
+            state.truncated = false;
+            state.theoreticalLowerBound = false;
+          } finally {
+            state.elapsedMs = performance.now() - started;
+            renderStats();
+            renderPage();
+            setBusy(false);
+          }
+        }
+
+        function goToPage() {
+          const val = parseInt(refs.goToPage.value, 10);
+          if (!Number.isFinite(val) || val < 1) return;
+          const totalPages = Math.max(
+            1,
+            Math.ceil(state.combos.length / PAGE_SIZE),
+          );
+          state.currentPage = clamp(val, 1, totalPages);
+          renderPage();
+        }
+
+        refs.analyzeBtn.addEventListener("click", analyze);
+        refs.goBtn.addEventListener("click", goToPage);
+        refs.goToPage.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") goToPage();
+        });
+
+        refs.prevBtn.addEventListener("click", () => {
+          state.currentPage = Math.max(1, state.currentPage - 1);
+          renderPage();
+        });
+
+        refs.nextBtn.addEventListener("click", () => {
+          const totalPages = Math.max(
+            1,
+            Math.ceil(state.combos.length / PAGE_SIZE),
+          );
+          state.currentPage = Math.min(totalPages, state.currentPage + 1);
+          renderPage();
+        });
+
+        analyze();
+      })();
+    </script>
+  </body>
+</html>
