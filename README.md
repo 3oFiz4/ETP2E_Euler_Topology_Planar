@@ -1,7 +1,9 @@
 # ETP²E — Euler Topological Planar Partition Explorer
+<img width="1908" height="992" alt="image" src="https://github.com/user-attachments/assets/bd148000-e5f3-4f52-be3d-a5dfb5d11b49" />
+<img width="1032" height="966" alt="image" src="https://github.com/user-attachments/assets/a75b0f66-af36-4f7a-88da-6bb483153b3b" />
+
 
 **Parse Eulerian-style topological planar stroke patterns • Enumerate combinatorial partitions by drawing mode • Visualize clipped & paginated results**
-
 ETP²E is an interactive web-based explorer that takes simple **stroke-based SVG patterns** and systematically enumerates topologically meaningful ways of partitioning / combining them under three different generation philosophies:
 
 - **Stroke-only** (S!) — treats each `<path>` as one atomic stroke  
