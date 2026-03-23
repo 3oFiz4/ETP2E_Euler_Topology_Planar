@@ -13,18 +13,36 @@ ETP²E is an interactive web-based explorer that takes simple **stroke-based SVG
 Results are clipped to a square canvas, deduplicated (up to topological equivalence in many cases), and presented in an elegant card-based paginated gallery.
 
 ### Motivation
-
 This tool was originally created to assist in the generative design of **logographs** for constructed languages (conlangs), where a small number of strokes should produce a rich, visually-distinct set of glyphs while obeying strong topological / combinatorial constraints.
 
-It is also useful for mathematicians and topologists interested in:
 
+
+The early motivation for this is because of my attempt to prove this preposition:Let a graph have 𝐿 edges. Under the assumptions that every subset of edges forms a valid stroke and strokes are identified up to reversal, the number of distinct strokes is what???
+<details>
+  <summary>Proof Attempt (unfinished):</summary>
+  
+$$ \text{Proposition. Let } L \text{ be the total number of lines. Then the total number of distinct single-stroke combinations (modulo reversal) is} $$
+$$ T_L = \binom{L}{1} + \sum_{k=2}^{L-1} \left( \binom{L}{k} - 1 \right) + \binom{L}{L}. $$
+$$ \text{Proof.} $$
+$$ \text{For each } k = 1,2,\dots,L, \text{ there are } \binom{L}{k} \text{ ways to choose } k \text{ lines.} $$
+$$ \text{Each such choice represents a candidate single-stroke combination.} $$
+$$ \text{For } k = 1, \text{ reversal does not produce a new combination.} $$
+$$ \text{For } k = L, \text{ the full set of lines forms a single combination.} $$
+$$ \text{For each } k = 2,\dots,L-1, \text{ each combination has a reverse, which is considered equivalent.} $$
+$$ \text{Thus, one duplicate must be removed for each such } k. $$
+$$ \text{There are } (L - 2) \text{ such values of  k, so we subtract 1 from each corresponding term.} $$
+$$ \text{Therefore,} $$
+$$ T_L = \binom{L}{1} + \sum_{k=2}^{L-1} \left( \binom{L}{k} - 1 \right) + \binom{L}{L}. $$
+$$ \square $$
+</details>
+
+It is also useful for mathematicians and topologists interested in:
 - stroke-based curve enumeration  
 - planar graph / arrangement partitioning  
 - connected vs. visually-disconnected stroke components  
 - controlled combinatorial explosion in low-stroke regimes (especially 2–5 strokes)
 
 ## Features
-
 - Upload or paste **SVG stroke patterns** (single-layer, path-based)
 - Three enumeration modes: **S!** • **C!** • **StC**
 - Option to filter to **only 2D-connected strokes** (eliminates topologically-connected but visually-disjoint pieces)
